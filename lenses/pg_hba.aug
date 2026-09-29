@@ -55,7 +55,7 @@ module Pg_Hba =
 
     (* View: method
        can contain an <option> *)
-    let method = [ label "method" . store /[A-Za-z][A-Za-z0-9]+/
+    let method = [ label "method" . store /[A-Za-z][A-Za-z0-9-]+/
                                   . ( Sep.tab . option )* ]
 
     (* Group: Records definitions *)
@@ -81,6 +81,7 @@ module Pg_Hba =
     (* View: filter
         The pg_hba.conf conf file *)
     let filter = (incl "/var/lib/pgsql/data/pg_hba.conf" .
+                  incl "/usr/local/pgsql/data/pg_hba.conf" .
                   incl "/var/lib/pgsql/*/data/pg_hba.conf" .
                   incl "/var/lib/postgresql/*/data/pg_hba.conf" .
                   incl "/etc/postgresql/*/*/pg_hba.conf" )

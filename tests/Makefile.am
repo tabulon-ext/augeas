@@ -30,6 +30,7 @@ lens_tests =			\
   lens-aptpreferences.sh	\
   lens-aptconf.sh	\
   lens-aptsources.sh		\
+  lens-aptsources822.sh		\
   lens-authinfo2.sh	\
   lens-authorized_keys.sh	\
   lens-authselectpam.sh \
@@ -51,6 +52,7 @@ lens_tests =			\
   lens-cmdline.sh	\
   lens-cobblersettings.sh	\
   lens-cobblermodules.sh	\
+  lens-cockpit.sh	\
   lens-collectd.sh	\
   lens-cpanel.sh	\
   lens-cron.sh			\
@@ -205,6 +207,7 @@ lens_tests =			\
   lens-smbusers.sh			\
   lens-solaris_system.sh		\
   lens-soma.sh			\
+  lens-sos.sh			\
   lens-spacevars.sh		\
   lens-splunk.sh		\
   lens-squid.sh			\
@@ -283,10 +286,11 @@ check_SCRIPTS = \
   test-events-saved.sh test-save-mode.sh test-unlink-error.sh \
   test-augtool-empty-line.sh test-augtool-modify-root.sh \
   test-span-rec-lens.sh test-nonwritable.sh test-augmatch.sh \
-  test-function-modified.sh
+  test-augprint.sh \
+  test-function-modified.sh test-createfile.sh
 
 EXTRA_DIST = \
-  test-augtool root lens-test-1 \
+  test-augtool test-augprint root lens-test-1 \
   $(check_SCRIPTS) $(wildcard modules/*.aug) xpath.tests run.tests
 
 noinst_SCRIPTS = $(check_SCRIPTS)
@@ -303,7 +307,7 @@ TESTS_ENVIRONMENT = \
 
 TESTS = $(check_SCRIPTS) $(check_PROGRAMS)
 
-INCLUDES = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
 
 fatest_SOURCES = fatest.c cutest.c cutest.h $(top_srcdir)/src/memory.c $(top_srcdir)/src/memory.h
 fatest_LDADD = $(top_builddir)/src/libfa.la $(LIBXML_LIBS) $(GNULIB)

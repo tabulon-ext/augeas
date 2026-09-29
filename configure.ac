@@ -1,4 +1,4 @@
-AC_INIT(augeas, 1.13.0)
+AC_INIT(augeas, 1.15.0)
 AC_CONFIG_SRCDIR([src/augeas.c])
 AC_CONFIG_AUX_DIR([build/ac-aux])
 AM_CONFIG_HEADER([config.h])
@@ -140,3 +140,8 @@ AC_OUTPUT(Makefile \
 	  doc/Makefile \
 	  doc/naturaldocs/Makefile \
           augeas.pc augeas.spec)
+
+# Bash completion ...
+PKG_CHECK_VAR(bashcompdir, [bash-completion], [completionsdir], ,
+  bashcompdir="${sysconfdir}/bash_completion.d")
+AC_SUBST(bashcompdir)

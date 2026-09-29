@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "release-*"
+
+# Needed to create the release and upload the tarball to it
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The 'dist' target generates ChangeLog from the git log, which
+          # needs more than the single commit checkout fetches by default
+          fetch-depth: 0
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake bison flex libtool-bin \
+            libreadline-dev libselinux1-dev libxml2-dev \
+            pkg-config
+
+      # Populate the gnulib submodule from the cache, or with a shallow fetch,
+      # so that bootstrap does not clone all of gnulib's history
+      - uses: ./.github/actions/gnulib
+
+      - name: Autogen
+        run: ./autogen.sh
+
+      # Releasing a tag that does not match AC_INIT produces a tarball whose
+      # name has nothing to do with the tag; catch that before building
+      - name: Check the tag against configure.ac
+        id: version
+        run: |
+          version=$(sed -ne '/^AC_INIT/{s/.*, \(.*\))$/\1/; p }' configure.ac)
+          tag=${GITHUB_REF_NAME#release-}
+          if [ "$version" != "$tag" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match AC_INIT version $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Distcheck
+        run: make distcheck
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --draft \
+            --title "Release $GITHUB_REF_NAME" \
+            --generate-notes \
+            "augeas-$VERSION.tar.gz"

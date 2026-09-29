@@ -2547,11 +2547,11 @@ int fa_equals(struct fa *fa1, struct fa *fa2) {
 }
 
 static unsigned int chr_score(char c) {
-    if (isalpha(c)) {
+    if (isalpha((unsigned char) c)) {
         return 2;
-    } else if (isalnum(c)) {
+    } else if (isalnum((unsigned char) c)) {
         return 3;
-    } else if (isprint(c)) {
+    } else if (isprint((unsigned char) c)) {
         return 7;
     } else if (c == '\0') {
         return 10000;
@@ -3550,6 +3550,8 @@ static struct re *parse_regexp(struct re_parse *parse) {
     return re;
 
  error:
+    if (re == NULL && parse->error == REG_NOERROR)
+        parse->error = _REG_ENOSYS;
     re_unref(re);
     return NULL;
 }
@@ -4475,7 +4477,7 @@ static void print_char(FILE *out, uchar c) {
        Also, a space ' ' is shown as '\s' */
     static const char *const escape_from = " \n\t\v\b\r\f\a/\0";
     static const char *const escape_to = "sntvbrfa/0";
-    char *p = strchr(escape_from, c);
+    const char *p = strchr(escape_from, c);
     if (p != NULL) {
         int i = p - escape_from;
         fprintf(out, "\\\\%c", escape_to[i]);

@@ -134,7 +134,7 @@ void syntax_error(struct info *info, const char *format, ...) {
     if (error->code != AUG_NOERROR && error->code != AUG_ESYNTAX)
         return;
 
-	va_start(ap, format);
+    va_start(ap, format);
     format_error(info, AUG_ESYNTAX, format, ap);
     va_end(ap);
 }
@@ -146,7 +146,7 @@ void fatal_error(struct info *info, const char *format, ...) {
     if (error->code == AUG_EINTERNAL)
         return;
 
-	va_start(ap, format);
+    va_start(ap, format);
     format_error(info, AUG_EINTERNAL, format, ap);
     va_end(ap);
 }
@@ -479,7 +479,7 @@ static struct binding *bnd_lookup(struct binding *bindings, const char *name) {
 }
 
 static char *modname_of_qname(const char *qname) {
-    char *dot = strchr(qname, '.');
+    const char *dot = strchr(qname, '.');
     if (dot == NULL)
         return NULL;
 
@@ -1935,7 +1935,7 @@ static char *module_basename(const char *modname) {
     if (asprintf(&fname, "%s" AUG_EXT, modname) == -1)
         return NULL;
     for (int i=0; i < strlen(modname); i++)
-        fname[i] = tolower(fname[i]);
+        fname[i] = tolower((unsigned char) fname[i]);
     return fname;
 }
 
@@ -2076,7 +2076,7 @@ int interpreter_init(struct augeas *aug) {
             p += 1;
         q = strchr(p, '.');
         name = strndup(p, q - p);
-        name[0] = toupper(name[0]);
+        name[0] = toupper((unsigned char) name[0]);
         res = load_module(aug, name);
         free(name);
         if (res == -1)

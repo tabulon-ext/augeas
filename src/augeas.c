@@ -1516,6 +1516,10 @@ static int tree_save(struct augeas *aug, struct tree *tree,
                 }
             }
             if (transform != NULL) {
+                /* If this file did not previously exist and is being created by augeas,
+                 * then the 'file' flag in the node t will not be set yet. Set it now
+                 */
+                t->file = true;
                 int r = transform_save(aug, transform, tpath, t);
                 if (r == -1)
                     result = -1;
@@ -1794,7 +1798,7 @@ int aug_transform(struct augeas *aug, const char *lens,
     int r = 0, result = -1;
     struct tree *xfm = NULL, *lns = NULL, *t = NULL;
     const char *filter = NULL;
-    char *p;
+    const char *p;
     int exists;
     char *lensname = NULL, *xfmname = NULL;
 
@@ -1996,11 +2000,11 @@ int aug_preview(struct augeas *aug, const char *path, char **out) {
     ERR_BAIL(aug);
     ERR_THROW(tree == NULL, aug, AUG_ENOMATCH, "No node matching %s", path);
 
-    file_path = tree_source(aug, tree);
+    while (!(ROOT_P(tree) || tree->file))
+        tree = tree->parent;
+    file_path = path_of_tree(tree);
 
-    ERR_THROW(file_path == NULL, aug, AUG_EBADARG, "Path %s is not associated with a file", path);
-
-    tree = tree_find(aug, file_path);
+    ERR_THROW( (ROOT_P(tree) || file_path == NULL), aug, AUG_EBADARG, "Path %s is not associated with a file", path);
 
     xasprintf(&lens_path, "%s%s/%s", AUGEAS_META_TREE, file_path, s_lens);
     ERR_NOMEM(lens_path == NULL, aug);

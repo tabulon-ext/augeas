@@ -214,7 +214,7 @@ char *escape(const char *text, int cnt, const char *extra) {
             len += 2;  /* Escaped as '\x' */
         else if (text[i] && extra && (strchr(extra, text[i]) != NULL))
             len += 2;  /* Escaped as '\x' */
-        else if (! isprint(text[i]))
+        else if (! isprint((unsigned char) text[i]))
             len += 4;  /* Escaped as '\ooo' */
         else
             len += 1;
@@ -223,14 +223,14 @@ char *escape(const char *text, int cnt, const char *extra) {
         return NULL;
     e = esc;
     for (int i=0; i < cnt; i++) {
-        char *p;
+        const char *p;
         if (text[i] && ((p = strchr(escape_chars, text[i])) != NULL)) {
             *e++ = '\\';
             *e++ = escape_names[p - escape_chars];
         } else if (text[i] && extra && (strchr(extra, text[i]) != NULL)) {
             *e++ = '\\';
             *e++ = text[i];
-        } else if (! isprint(text[i])) {
+        } else if (! isprint((unsigned char) text[i])) {
             sprintf(e, "\\%03o", (unsigned char) text[i]);
             e += 4;
         } else {
@@ -416,7 +416,7 @@ static char *cleanstr(char *path, const char sep) {
     if (path == NULL || strlen(path) == 0)
         return path;
     char *e = path + strlen(path) - 1;
-    while (e >= path && (*e == sep || isspace(*e)))
+    while (e >= path && (*e == sep || isspace((unsigned char) *e)))
         *e-- = '\0';
     return path;
 }
@@ -431,8 +431,8 @@ char *cleanpath(char *path) {
 
 const char *xstrerror(int errnum, char *buf, size_t len) {
 #ifdef HAVE_STRERROR_R
-# ifdef __USE_GNU
-    /* Annoying linux specific API contract */
+# if defined(__USE_GNU) && defined(__GLIBC__)
+    /* Annoying GNU specific API contract */
     return strerror_r(errnum, buf, len);
 # else
     strerror_r(errnum, buf, len);
